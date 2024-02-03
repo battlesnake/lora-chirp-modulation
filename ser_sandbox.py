@@ -7,12 +7,12 @@ import numpy as np
 
 
 lora_config = LoraConfig(
-	spread_factor=8,
-	bandwidth=48000,
+	spread_factor=7,
+	bandwidth=6000,
 	sample_rate=48000,
 )
 
-symbol = 0
+symbol = 20
 snr = -20
 
 

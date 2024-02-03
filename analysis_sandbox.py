@@ -13,12 +13,12 @@ import math
 
 
 sample_rate = 96000
-bandwidth = sample_rate
-runs = 200
-symbol = 42
+bandwidth = 16000
+runs = 100
+symbol = 25
 
 sf_range = np.arange(5, 14 + 1)
-snr_range = np.arange(-60, 0 + 1, 1)
+snr_range = np.arange(-60, 0 + 1, 6)
 
 results = np.zeros((len(sf_range), len(snr_range), runs))
 

@@ -111,10 +111,16 @@ class LoraConfig:
 
 def lora_symbol(config: LoraConfig, symbol: int = 0, conj: bool = False):
 	sf2 = config.symbol_count
-	time_slice = TimeSlice(config.sample_rate, 0, math.ceil(sf2 / config.bandwidth * config.sample_rate))
-	k = (time_slice.indices + symbol) % sf2 + 1
+	chip_duration_s = 1 / config.bandwidth
+	chip_duration_samples = chip_duration_s * config.sample_rate
+	chirp_duration_s = chip_duration_s * sf2
+	chirp_duration_samples = chirp_duration_s * config.sample_rate
+	time_slice = TimeSlice(config.sample_rate, 0, math.ceil(chirp_duration_samples))
+	chip = (np.floor_divide(time_slice.indices, chip_duration_samples) + symbol) % sf2
+	frequency_step = config.bandwidth / sf2
+	frequency = frequency_step * chip
 	magnitude = 1 / math.sqrt(sf2)
-	phase = math.tau * k * k / (sf2 * 2)
+	phase = math.tau / config.sample_rate * np.cumsum(frequency)
 	if conj:
 		phase = -phase
 	return time_slice, magnitude * np.exp(i * phase)
