@@ -2,6 +2,7 @@ import math
 import numpy as np
 import numpy.typing as npt
 from dataclasses import dataclass
+from enum import Enum
 
 i = 1j
 
@@ -79,11 +80,17 @@ class TimeSlice():
 		)
 
 
+class ChirpShape(Enum):
+	LINEAR = "linear"
+	STEPPED = "stepped"
+
+
 @dataclass(frozen=True)
 class LoraConfig:
 	spread_factor: float
 	bandwidth: float
 	sample_rate: float
+	shape: ChirpShape = ChirpShape.STEPPED
 
 	@property
 	def symbol_count(self):
@@ -98,7 +105,7 @@ class LoraConfig:
 		return self.symbol_rate * self.spread_factor
 
 	@staticmethod
-	def create(symbol_count: int, sample_rate: float, symbol_rate: float):
+	def create(symbol_count: int, sample_rate: float, symbol_rate: float, shape: ChirpShape):
 		symbol_samples = sample_rate / symbol_rate
 		spread_factor = math.log2(symbol_count)
 		bandwidth = symbol_count * sample_rate / symbol_samples
@@ -106,6 +113,7 @@ class LoraConfig:
 			spread_factor=spread_factor,
 			bandwidth=bandwidth,
 			sample_rate=sample_rate,
+			shape=shape,
 		)
 
 
@@ -116,9 +124,14 @@ def lora_symbol(config: LoraConfig, symbol: int = 0, conj: bool = False):
 	chirp_duration_s = chip_duration_s * sf2
 	chirp_duration_samples = chirp_duration_s * config.sample_rate
 	time_slice = TimeSlice(config.sample_rate, 0, math.ceil(chirp_duration_samples))
-	chip = (np.floor_divide(time_slice.indices, chip_duration_samples) + symbol) % sf2
-	frequency_step = config.bandwidth / sf2
-	frequency = frequency_step * chip
+	if config.shape == ChirpShape.LINEAR:
+		frequency = config.bandwidth * ((time_slice.indices / chirp_duration_samples + symbol / sf2) % 1)
+	elif config.shape == ChirpShape.STEPPED:
+		chip = (np.floor_divide(time_slice.indices, chip_duration_samples) + symbol) % sf2
+		frequency_step = config.bandwidth / sf2
+		frequency = frequency_step * chip
+	else:
+		raise ValueError()
 	magnitude = 1 / math.sqrt(sf2)
 	phase = math.tau / config.sample_rate * np.cumsum(frequency)
 	if conj:

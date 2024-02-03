@@ -12,13 +12,13 @@ import multiprocessing
 import math
 
 
-sample_rate = 96000
-bandwidth = 16000
-runs = 100
+sample_rate = 48000
+bandwidth = 8000
+runs = 500
 symbol = 25
 
 sf_range = np.arange(5, 14 + 1)
-snr_range = np.arange(-60, 0 + 1, 6)
+snr_range = np.arange(-60, 0 + 1, 3)
 
 results = np.zeros((len(sf_range), len(snr_range), runs))
 

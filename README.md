@@ -31,5 +31,8 @@ So to transmit a symbol s, we just offset the shift by the symbol index:
     frequency = chip Δf
 
 
-Note:
-Good explanations, but incorrect code: https://www.youtube.com/watch?v=jHWepP1ZWTk&t=296s
+## Reading
+
+ - [Good explanations of the basics](https://www.youtube.com/watch?v=jHWepP1ZWTk&t=296s)
+ - [Maths](https://en.wikipedia.org/wiki/Chirp_spectrum)
+ - [Chirp compression](https://en.wikipedia.org/wiki/Chirp_compression)

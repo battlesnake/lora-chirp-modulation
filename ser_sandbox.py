@@ -1,19 +1,22 @@
 #!/usr/bin/env python3
 
-from generator import lora_symbol, noise_for, LoraConfig
+from generator import ChirpShape, lora_symbol, noise_for, LoraConfig
 import matplotlib.ticker as ticker
 import matplotlib.pyplot as plt
 import numpy as np
+import tqdm
 
 
 lora_config = LoraConfig(
-	spread_factor=7,
+	spread_factor=8,
 	bandwidth=6000,
 	sample_rate=48000,
+	shape=ChirpShape.STEPPED,
 )
 
 symbol = 20
-snr = -20
+snr = -60
+runs = 15000
 
 
 signal_time, symbol_shape = lora_symbol(
@@ -26,9 +29,8 @@ _, base_down_chirp_shape = lora_symbol(
 	conj=True,
 )
 
-runs = 100
 results = np.zeros(runs)
-for i in range(runs):
+for i in tqdm.tqdm(range(runs), total=runs):
 
 	noise_shape = noise_for(symbol_shape, snr)
 	signal_shape = symbol_shape + noise_shape
@@ -55,12 +57,20 @@ ax.plot(signal_time.times, symbol_shape.real, color="blue", alpha=0.5)
 ax.plot(signal_time.times, symbol_shape.imag, color="red", alpha=0.2)
 
 ax = axs[1]
-ax.set_title(f"Decodings (ser={symbol_error_rate*100}% @ snr={snr}dB)")
+ax.set_title(f"Decodings (ser={symbol_error_rate*100:.2f}% @ snr={snr}dB)")
 ax.set(xlabel="Symbol", ylabel="Count")
-n, bins, patches = ax.hist(results, bins=np.arange(lora_config.symbol_count), color="olive", density=True)
-patches[symbol].set_fc("green")
-if lora_config.symbol_count > 300:
-	ax.plot(0.5 * (bins[1:] + bins[:-1]), n)
-ax.yaxis.set_major_formatter(ticker.PercentFormatter(1))
+symbols = np.arange(lora_config.symbol_count)
+hist, _ = np.histogram(results, bins=np.arange(lora_config.symbol_count + 1))
+ax.bar(
+	symbols,
+	hist,
+	color=[
+		"green"
+		if symbol_iter == symbol else
+		"olive"
+		for symbol_iter in symbols
+	]
+)
+ax.yaxis.set_major_formatter(ticker.PercentFormatter(runs))
 
 plt.show()
