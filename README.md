@@ -21,3 +21,15 @@ Experiment sandbox for playing with CHIRP modulation and developing some intuiti
     Frequency shift per chip = B / 2^SF
 
 i.e. frequency = [ ⌊t / T⌋ (B / 2^SF) ] mod B
+
+So to transmit a symbol s, we just offset the shift by the symbol index:
+
+    chip = (⌊t / T⌋ + s) mod 2^SF
+
+    Δf = B / 2^SF
+
+    frequency = chip Δf
+
+
+Note:
+Good explanations, but incorrect code: https://www.youtube.com/watch?v=jHWepP1ZWTk&t=296s
